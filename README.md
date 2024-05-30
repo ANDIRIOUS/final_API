@@ -45,7 +45,7 @@ db.episodes.aggregate([ { $unwind: "$characters" },
 { $sort: { characterCount: -1 } }, 
 { $limit: 3}] ).pretty()
 ```
-Promedio de episodios por temporada
+Promedio de episodios por personaje
 
 ```
 db.characters.aggregate([ { $project: { name: 1, episodeCount: 
@@ -54,7 +54,7 @@ db.characters.aggregate([ { $project: { name: 1, episodeCount:
 { $avg: "$episodeCount" } } }] )
 
 ```
-Promedio de episodios de un personaje
+Promedio de personajes por episodio
 
 ```
 db.episodes.aggregate([ { $project: { name: 1, numCharacters:
