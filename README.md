@@ -2,6 +2,9 @@
 
 Este proyecto usa la API de Rick and Monty con los datos en una base de MongoDB y Neo4J. El objetivo es realizar consultas interesantes.
 
+Pueden seguir la presentación aquí:
+https://docs.google.com/presentation/d/1D3gG_AGZcQ4geBgEFjxntPmCL5nEfNklp-9AhsvwAhU/edit?usp=sharing
+
 Clonaremos el repositorio 
 
 ```
@@ -42,7 +45,7 @@ db.episodes.aggregate([ { $unwind: "$characters" },
 { $sort: { characterCount: -1 } }, 
 { $limit: 3}] ).pretty()
 ```
-Promedio de episodios por temporada
+Promedio de episodios por personaje
 
 ```
 db.characters.aggregate([ { $project: { name: 1, episodeCount: 
@@ -51,7 +54,7 @@ db.characters.aggregate([ { $project: { name: 1, episodeCount:
 { $avg: "$episodeCount" } } }] )
 
 ```
-Promedio de episodios de un personaje
+Promedio de personajes por episodio
 
 ```
 db.episodes.aggregate([ { $project: { name: 1, numCharacters:
@@ -72,6 +75,26 @@ RETURN season, size(characters_per_season) AS unique_character_count
 ORDER BY unique_character_count DESC
 ```
 
+```
+MATCH (c:Character)-[:APPEARS_IN]->(e:Episode)
+WITH c, e, substring(e.episode, 0, 3) AS season 
+WITH c, season, e
+ORDER BY e.episode
+WITH c, head(collect(season)) AS first_season 
+WITH first_season, collect(DISTINCT c.id) AS characters_per_season
+RETURN first_season AS season, size(characters_per_season) AS unique_character_count
+ORDER BY unique_character_count DESC
+```
+Promedio de personajes por episodio por temporada
+```
+MATCH (c:Character)-[:APPEARS_IN]->(e:Episode)
+WITH e, substring(e.episode, 0, 3) AS season, c
+WITH season, e, COUNT(DISTINCT c) AS num_characters
+WITH season, COUNT(DISTINCT e) AS num_episodes, SUM(num_characters) AS total_characters
+RETURN season, total_characters * 1.0 / num_episodes AS avg_characters_per_episode
+ORDER BY season
+```
+
 Número de especies promedio por episodio en cada temporada:
 ```
 MATCH (c:Character)-[:APPEARS_IN]->(e:Episode)
@@ -87,7 +110,7 @@ Número de ubicaciones distintas en cada temporada:
 ```
 MATCH (c:Character)-[:APPEARS_IN]->(e:Episode)
 MATCH (c)-[:LIVES_IN]->(l:Location)
-WITH e, substring(e.episode, 1, 3) AS season, l
+WITH e, substring(e.episode, 0, 3) AS season, l
 WITH season, e, COUNT(DISTINCT l) AS num_locations
 WITH season, COUNT(DISTINCT e) AS num_episodes, SUM(num_locations) AS total_locations
 RETURN season, total_locations
