@@ -88,7 +88,7 @@ ORDER BY unique_character_count DESC
 Promedio de personajes por episodio por temporada
 ```
 MATCH (c:Character)-[:APPEARS_IN]->(e:Episode)
-WITH e, substring(e.episode, 1, 3) AS season, c
+WITH e, substring(e.episode, 0, 3) AS season, c
 WITH season, e, COUNT(DISTINCT c) AS num_characters
 WITH season, COUNT(DISTINCT e) AS num_episodes, SUM(num_characters) AS total_characters
 RETURN season, total_characters * 1.0 / num_episodes AS avg_characters_per_episode
@@ -110,7 +110,7 @@ Número de ubicaciones distintas en cada temporada:
 ```
 MATCH (c:Character)-[:APPEARS_IN]->(e:Episode)
 MATCH (c)-[:LIVES_IN]->(l:Location)
-WITH e, substring(e.episode, 1, 3) AS season, l
+WITH e, substring(e.episode, 0, 3) AS season, l
 WITH season, e, COUNT(DISTINCT l) AS num_locations
 WITH season, COUNT(DISTINCT e) AS num_episodes, SUM(num_locations) AS total_locations
 RETURN season, total_locations
